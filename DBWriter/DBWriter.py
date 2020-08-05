@@ -484,8 +484,7 @@ class DBWriter(multiprocessing.Process):
         :return:
         """
 
-        # FIXME This needs to be modified to do a better job finding locations (ie, finish searching for other fields
-        # logic, etc.
+        # FIXME This needs to be modified to do a better job finding locations (ie, finish searching for other fields logic, etc.
 
         adminList = None
 

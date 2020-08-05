@@ -1,13 +1,12 @@
-# coding=utf-8
+#! /usr/bin/env python3
+# -*- coding: utf-8 -
 
-"""
-WebsiteBase.py
+"""WebsiteBase.py
 Describes the base class for all of the derived website classes
 """
 
 from collections import defaultdict
 import configparser
-import re
 import multiprocessing
 from typing import List, DefaultDict, Tuple
 from urllib.parse import urlparse
@@ -20,13 +19,21 @@ import re
 
 
 class WebsiteBase(object):
-    """
+    """WebsiteBase class.
     This class is the base class for all of the website processing classes.  It defines their interface and provides
     some common functionality for all classes.
     """
 
     # ******************************************************************************************************************
     def __init__(self, inQueue: multiprocessing.Queue, inConfigObject: configparser.ConfigParser, inURL: str):
+        """Initializer
+
+        Initializes the object.
+
+        :param inQueue: Input multiprocessing Queue object
+        :param inConfigObject: Input global config object
+        :param inURL: Input URL to scrape
+        """
 
         super().__init__()
 
@@ -83,7 +90,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def __del__(self):
-        """
+        """Destructor.
+
         Clean up after ourselves
         :return: None
         """
@@ -104,7 +112,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _ReadConfiguration(self, inConfigObject: configparser.ConfigParser) -> bool:
-        """
+        """Read our configuration entries.
+
         Use the passed-in ConfigParser object to set ourselves up
         :return: True if OK, False otherwise
         """
@@ -133,7 +142,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _CreateDBObjects(self) -> bool:
-        """
+        """ Create necessary database objects.
+
         Create the psycopg2 object and cursor for the object
         :return: True if successful, False otherwise
         """
@@ -163,7 +173,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _ResetSQLConnection(self) -> bool:
-        """
+        """Resets the SQL connection.
+
         Psycopg2 tends to just stop working sometimes on error, so here we reset our connection
         """
 
@@ -186,7 +197,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _GetFeedItems(self) -> List[ExtractedArticle]:
-        """
+        """ Retrieve RSS feed items.
+
         Parse the RSS feed for this object.  For each URL in the feed, check if it is already in the DB before adding it
         to the internal to do list.
         :return: List of strings that contain the urls to process
@@ -228,7 +240,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _ParseArticle(self, inURL: str) -> str:
-        """
+        """Parse the scraped article.
+
         This method must be overridden in the child classes.  It does the job of scraping the article and returning text
         that can then be passed to Spacy.
         :param inURL: URL to process
@@ -238,7 +251,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _CheckSimilarity(self, inText1: str, inText2: str) -> bool:
-        """
+        """Checks string similarity.
+
         Checks the input text for a similarity to the passed-in dictionary
         :param inText1: text string to search
         :param inText2: second string to compare
@@ -263,7 +277,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _GetEntities(self, inText: str) -> DefaultDict[str, list]:
-        """
+        """Retrieve the detected NLP entities.
+
         Perform the NLP and create a defaultdict(list) that contains the entities grouped by their spacy type.
         :param inText: text of the article to process
         :return: defaultdict(list) of the extracted entities.
@@ -301,7 +316,7 @@ class WebsiteBase(object):
                 continue
 
             # If the word has already been imported, just continue on
-            #if tText in returnDict[tEntity.label_]:
+            # if tText in returnDict[tEntity.label_]:
             for tKey, tValues in returnDict.items():
                 if tText in tValues:
                     foundIt = True
@@ -344,7 +359,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def ProcessFeed(self):
-        """
+        """Process the RSS feed.
+
         Grab all of the articles from the RSS feed and process them.
         :return:
         """
@@ -382,7 +398,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _RemoveStopWords(self, inText: str) -> str:
-        """
+        """Remove stop words from the text to pre-process for Spacy.
+
         Removes a list of stop words from the input string
         :param inText: input string to strip
         :return: stripped text
@@ -402,7 +419,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _FixText(self, inText: str) -> str:
-        """
+        """Fix things in text that can interfere with Spacy.
+
         We need to fix some issues that come up from BS4 purging tags and returning the text.  Plus, perform some fixes
         to help Spacy along based on empirical testing.
         :param inText: string
@@ -438,7 +456,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _GetProblemEntities(self) -> List[Tuple]:
-        """
+        """Retrieve known problem entities from the DB.
+
         Queries the problem_entities table in the database to get the list of words we need to manually look for
         :return: list(tuple) of values
         """
@@ -464,7 +483,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _ProcessProblemEntities(self, inText: str, inDict: DefaultDict[str, List]) -> DefaultDict[str, List]:
-        """
+        """Process any found problem entities.
+
         Check for entities that Spacy has trouble with and manually append them to the list if necessary
         :param inDict: DefaultDict[List] of found entities
         :return: DefaultDict[List] of modified entities
@@ -483,7 +503,8 @@ class WebsiteBase(object):
 
     # ******************************************************************************************************************
     def _IsBadEntity(self, inEntity: str) -> bool:
-        """
+        """Check if the entity is a known bad (ie, dates are wrong, etc).
+
         Checks if the entity is in a list of bad entities found in processing
         :param inEntity: string to check
         :return: True if found, False otherwise

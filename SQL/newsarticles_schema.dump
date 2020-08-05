@@ -1,0 +1,1014 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
+-- Dumped by pg_dump version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: topology; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA topology;
+
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+--
+-- Name: address_standardizer; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS address_standardizer WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION address_standardizer; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION address_standardizer IS 'Used to parse an address into constituent elements. Generally used to support geocoding address normalization step.';
+
+
+--
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
+
+
+--
+-- Name: fuzzystrmatch; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION fuzzystrmatch; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION fuzzystrmatch IS 'determine similarities and distance between strings';
+
+
+--
+-- Name: hstore; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION hstore; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION hstore IS 'data type for storing sets of (key, value) pairs';
+
+
+--
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+
+
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
+
+
+--
+-- Name: postgres_fdw; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgres_fdw WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgres_fdw; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgres_fdw IS 'foreign-data wrapper for remote PostgreSQL servers';
+
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: article_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.article_events (
+    id bigint NOT NULL,
+    article_id bigint,
+    event_id bigint
+);
+
+
+--
+-- Name: article_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.article_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: article_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.article_events_id_seq OWNED BY public.article_events.id;
+
+
+--
+-- Name: article_facilities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.article_facilities (
+    id bigint NOT NULL,
+    article_id bigint,
+    facility_id bigint
+);
+
+
+--
+-- Name: article_facilities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.article_facilities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: article_facilities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.article_facilities_id_seq OWNED BY public.article_facilities.id;
+
+
+--
+-- Name: article_locations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.article_locations (
+    id bigint NOT NULL,
+    article_id bigint,
+    location_id bigint
+);
+
+
+--
+-- Name: article_locations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.article_locations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: article_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.article_locations_id_seq OWNED BY public.article_locations.id;
+
+
+--
+-- Name: locations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.locations (
+    id bigint NOT NULL,
+    name text,
+    alternate_name text,
+    latitude double precision,
+    longitude double precision,
+    elevation integer,
+    country_id bigint,
+    asciiname text,
+    cc2 character(2),
+    the_geom public.geometry(Point,4326),
+    aliases text[],
+    population bigint,
+    fclasscode character varying(12),
+    fclass character(1),
+    fcode character varying(10)
+);
+
+
+--
+-- Name: news_articles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.news_articles (
+    id bigint NOT NULL,
+    article_title text,
+    article_url text,
+    article_text text,
+    website text
+);
+
+
+--
+-- Name: article_locations_view; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.article_locations_view AS
+ SELECT news_articles.id,
+    news_articles.article_title AS title,
+    news_articles.article_url AS url,
+    locations.name AS location_name,
+    locations.cc2,
+    locations.the_geom
+   FROM ((public.news_articles
+     JOIN public.article_locations ON ((news_articles.id = article_locations.article_id)))
+     JOIN public.locations ON ((article_locations.location_id = locations.id)));
+
+
+--
+-- Name: article_organizations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.article_organizations (
+    id bigint NOT NULL,
+    article_id bigint,
+    organization_id bigint
+);
+
+
+--
+-- Name: article_organizations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.article_organizations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: article_organizations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.article_organizations_id_seq OWNED BY public.article_organizations.id;
+
+
+--
+-- Name: article_people; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.article_people (
+    id bigint NOT NULL,
+    article_id bigint,
+    people_id bigint
+);
+
+
+--
+-- Name: article_people_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.article_people_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: article_people_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.article_people_id_seq OWNED BY public.article_people.id;
+
+
+--
+-- Name: countries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.countries (
+    id bigint NOT NULL,
+    name text,
+    cc2 character varying(2),
+    cc3 character varying(3),
+    isonumeric character varying(5),
+    aliases text[]
+);
+
+
+--
+-- Name: countries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.countries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: countries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.countries_id_seq OWNED BY public.countries.id;
+
+
+--
+-- Name: event; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.event (
+    id bigint NOT NULL,
+    name text,
+    date date,
+    aliases text[]
+);
+
+
+--
+-- Name: event_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.event_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.event_id_seq OWNED BY public.event.id;
+
+
+--
+-- Name: facilities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.facilities (
+    id bigint NOT NULL,
+    name text,
+    location_id bigint,
+    aliases text[]
+);
+
+
+--
+-- Name: facilities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.facilities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: facilities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.facilities_id_seq OWNED BY public.facilities.id;
+
+
+--
+-- Name: locations2_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.locations2_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: locations2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.locations2_id_seq OWNED BY public.locations.id;
+
+
+--
+-- Name: news_articles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.news_articles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: news_articles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.news_articles_id_seq OWNED BY public.news_articles.id;
+
+
+--
+-- Name: organizations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.organizations (
+    id bigint NOT NULL,
+    name text,
+    aliases text[]
+);
+
+
+--
+-- Name: organizations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.organizations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: organizations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;
+
+
+--
+-- Name: people; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.people (
+    id bigint NOT NULL,
+    name text,
+    aliases text[]
+);
+
+
+--
+-- Name: people_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.people_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: people_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.people_id_seq OWNED BY public.people.id;
+
+
+--
+-- Name: problem_entities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.problem_entities (
+    id integer NOT NULL,
+    entity_name text NOT NULL,
+    entity_spacy_label text NOT NULL
+);
+
+
+--
+-- Name: problem_entities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.problem_entities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: problem_entities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.problem_entities_id_seq OWNED BY public.problem_entities.id;
+
+
+--
+-- Name: subscriptions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.subscriptions (
+    id integer NOT NULL,
+    url text NOT NULL,
+    name text,
+    classname text
+);
+
+
+--
+-- Name: subscriptions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.subscriptions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: subscriptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.subscriptions_id_seq OWNED BY public.subscriptions.id;
+
+
+--
+-- Name: article_events id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_events ALTER COLUMN id SET DEFAULT nextval('public.article_events_id_seq'::regclass);
+
+
+--
+-- Name: article_facilities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_facilities ALTER COLUMN id SET DEFAULT nextval('public.article_facilities_id_seq'::regclass);
+
+
+--
+-- Name: article_locations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_locations ALTER COLUMN id SET DEFAULT nextval('public.article_locations_id_seq'::regclass);
+
+
+--
+-- Name: article_organizations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_organizations ALTER COLUMN id SET DEFAULT nextval('public.article_organizations_id_seq'::regclass);
+
+
+--
+-- Name: article_people id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_people ALTER COLUMN id SET DEFAULT nextval('public.article_people_id_seq'::regclass);
+
+
+--
+-- Name: countries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.countries ALTER COLUMN id SET DEFAULT nextval('public.countries_id_seq'::regclass);
+
+
+--
+-- Name: event id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.event ALTER COLUMN id SET DEFAULT nextval('public.event_id_seq'::regclass);
+
+
+--
+-- Name: facilities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.facilities ALTER COLUMN id SET DEFAULT nextval('public.facilities_id_seq'::regclass);
+
+
+--
+-- Name: locations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations ALTER COLUMN id SET DEFAULT nextval('public.locations2_id_seq'::regclass);
+
+
+--
+-- Name: news_articles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.news_articles ALTER COLUMN id SET DEFAULT nextval('public.news_articles_id_seq'::regclass);
+
+
+--
+-- Name: organizations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.organizations ALTER COLUMN id SET DEFAULT nextval('public.organizations_id_seq'::regclass);
+
+
+--
+-- Name: people id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.people ALTER COLUMN id SET DEFAULT nextval('public.people_id_seq'::regclass);
+
+
+--
+-- Name: problem_entities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.problem_entities ALTER COLUMN id SET DEFAULT nextval('public.problem_entities_id_seq'::regclass);
+
+
+--
+-- Name: subscriptions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions ALTER COLUMN id SET DEFAULT nextval('public.subscriptions_id_seq'::regclass);
+
+
+--
+-- Name: article_events article_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_events
+    ADD CONSTRAINT article_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: article_facilities article_facilities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_facilities
+    ADD CONSTRAINT article_facilities_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: article_locations article_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_locations
+    ADD CONSTRAINT article_locations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: article_organizations article_organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_organizations
+    ADD CONSTRAINT article_organizations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: article_people article_people_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_people
+    ADD CONSTRAINT article_people_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: countries countries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.countries
+    ADD CONSTRAINT countries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: event event_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.event
+    ADD CONSTRAINT event_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: facilities facilities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.facilities
+    ADD CONSTRAINT facilities_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: locations locations2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations
+    ADD CONSTRAINT locations2_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: news_articles news_articles_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.news_articles
+    ADD CONSTRAINT news_articles_id_key UNIQUE (id);
+
+
+--
+-- Name: news_articles news_articles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.news_articles
+    ADD CONSTRAINT news_articles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.organizations
+    ADD CONSTRAINT organizations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: people people_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.people
+    ADD CONSTRAINT people_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions
+    ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: countries_cc2_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX countries_cc2_idx ON public.countries USING btree (cc2);
+
+
+--
+-- Name: countries_cc3_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX countries_cc3_idx ON public.countries USING btree (cc3);
+
+
+--
+-- Name: countries_name_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX countries_name_idx ON public.countries USING btree (name);
+
+
+--
+-- Name: idx_event_aliases; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_event_aliases ON public.event USING gin (aliases);
+
+
+--
+-- Name: idx_facility_aliases; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_facility_aliases ON public.facilities USING gin (aliases);
+
+
+--
+-- Name: idx_locations2_aliases; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_aliases ON public.locations USING gin (aliases);
+
+
+--
+-- Name: idx_locations2_fclass; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_fclass ON public.locations USING btree (fclass);
+
+
+--
+-- Name: idx_locations2_fclasscode; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_fclasscode ON public.locations USING btree (fclasscode);
+
+
+--
+-- Name: idx_locations2_fcode; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_fcode ON public.locations USING btree (fcode);
+
+
+--
+-- Name: idx_locations2_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_name ON public.locations USING btree (name);
+
+
+--
+-- Name: idx_locations2_population; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_population ON public.locations USING btree (population);
+
+
+--
+-- Name: idx_locations2_the_geom; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_locations2_the_geom ON public.locations USING gist (the_geom);
+
+ALTER TABLE public.locations CLUSTER ON idx_locations2_the_geom;
+
+
+--
+-- Name: idx_organizations_aliases; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_organizations_aliases ON public.organizations USING gin (aliases);
+
+
+--
+-- Name: idx_people_aliases; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_people_aliases ON public.people USING gin (aliases);
+
+
+--
+-- Name: idx_person_full_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_person_full_name ON public.people USING btree (name);
+
+
+--
+-- Name: article_events article_events_article_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_events
+    ADD CONSTRAINT article_events_article_id_fkey FOREIGN KEY (article_id) REFERENCES public.news_articles(id);
+
+
+--
+-- Name: article_events article_events_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_events
+    ADD CONSTRAINT article_events_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.event(id);
+
+
+--
+-- Name: article_facilities article_facilities_article_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_facilities
+    ADD CONSTRAINT article_facilities_article_id_fkey FOREIGN KEY (article_id) REFERENCES public.news_articles(id);
+
+
+--
+-- Name: article_facilities article_facilities_facility_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_facilities
+    ADD CONSTRAINT article_facilities_facility_id_fkey FOREIGN KEY (facility_id) REFERENCES public.facilities(id);
+
+
+--
+-- Name: article_locations article_locations_article_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_locations
+    ADD CONSTRAINT article_locations_article_id_fkey FOREIGN KEY (article_id) REFERENCES public.news_articles(id);
+
+
+--
+-- Name: article_locations article_locations_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_locations
+    ADD CONSTRAINT article_locations_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id);
+
+
+--
+-- Name: article_organizations article_organizations_article_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_organizations
+    ADD CONSTRAINT article_organizations_article_id_fkey FOREIGN KEY (article_id) REFERENCES public.news_articles(id);
+
+
+--
+-- Name: article_organizations article_organizations_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_organizations
+    ADD CONSTRAINT article_organizations_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: article_people article_people_article_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_people
+    ADD CONSTRAINT article_people_article_id_fkey FOREIGN KEY (article_id) REFERENCES public.news_articles(id);
+
+
+--
+-- Name: article_people article_people_people_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.article_people
+    ADD CONSTRAINT article_people_people_id_fkey FOREIGN KEY (people_id) REFERENCES public.people(id);
+
+
+--
+-- Name: facilities facilities_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.facilities
+    ADD CONSTRAINT facilities_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id);
+
+
+--
+-- Name: locations locations2_country_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations
+    ADD CONSTRAINT locations2_country_id_fkey FOREIGN KEY (country_id) REFERENCES public.countries(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

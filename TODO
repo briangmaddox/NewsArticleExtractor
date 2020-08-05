@@ -1,3 +1,0 @@
-TODO When debugging is done, change the print statements to log to syslog
-TODO Change to a process pool
-TODO Monitor memory usage to spec out VM

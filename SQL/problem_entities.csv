@@ -1,0 +1,16 @@
+"id","entity_name","entity_spacy_label"
+1,Theresa May,PERSON
+2,Drew Barrymore,PERSON
+3,Department of Health and Social Care,ORG
+5,Brexit,EVENT
+6,Instagram,ORG
+4,US,GPE
+7,St Patrick Day,EVENT
+8,Duchess of Cornwall,PERSON
+9,Manchester United,ORG
+10,Victoria Derbyshire,PERSON
+11,Gun City,ORG
+12,Vantiv,ORG
+13,Leicester City,ORG
+14,Norwich City,ORG
+15,PTSD,QUANTITY
