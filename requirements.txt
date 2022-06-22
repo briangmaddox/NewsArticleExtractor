@@ -19,7 +19,7 @@ ipaddr==2.2.0
 lockfile==0.12.2
 msgpack==0.6.2
 murmurhash==1.0.2
-numpy==1.19.0
+numpy==1.22.0
 packaging==20.3
 pep517==0.8.2
 plac==1.1.3
