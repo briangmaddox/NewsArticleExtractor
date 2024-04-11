@@ -14,7 +14,7 @@ en-core-web-lg==2.3.0
 feedparser==5.2.1
 fuzzywuzzy==0.18.0
 html5lib==1.0.1
-idna==2.8
+idna==3.7
 ipaddr==2.2.0
 lockfile==0.12.2
 msgpack==0.6.2
